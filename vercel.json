@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "app/wsgi.py",
+      "src": "api/index.py",
       "use": "@vercel/python",
       "config": {
         "maxLambdaSize": "15mb",
@@ -24,17 +24,19 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/app/wsgi.py"
+      "dest": "/api/index.py"
     }
   ],
   "env": {
     "PYTHONPATH": "/var/task",
     "DJANGO_SETTINGS_MODULE": "app.settings",
-    "PYTHONUNBUFFERED": "true"
+    "PYTHONUNBUFFERED": "true",
+    "DISABLE_COLLECTSTATIC": "1"
   },
   "build": {
     "env": {
-      "NODE_VERSION": "16.x"
+      "NODE_VERSION": "16.x",
+      "PYTHON_VERSION": "3.9"
     }
   }
 }
