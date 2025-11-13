@@ -11,31 +11,67 @@ log() {
 
 log "Starting build process..."
 
+# Set Python path
+export PYTHONPATH="${PYTHONPATH}:/var/task"
+
 # Install Python dependencies
 log "Installing dependencies..."
-pip install -r requirements.txt --no-cache-dir 2>&1 | tee -a /tmp/vercel/logs/deps.log
+pip install -r requirements.txt
 
-# Verify Django is installed
-if ! python -c "import django" 2>/dev/null; then
-    log "ERROR: Django is not installed!"
-    exit 1
+# Create static files directory if it doesn't exist
+mkdir -p staticfiles
+
+# Set DJANGO_SETTINGS_MODULE if not set
+if [ -z "$DJANGO_SETTINGS_MODULE" ]; then
+    export DJANGO_SETTINGS_MODULE="app.settings"
 fi
-
-# Set environment variables
-export PYTHONPATH=$PWD
 
 # Collect static files
 log "Collecting static files..."
-python manage.py collectstatic --noinput 2>&1 | tee -a /tmp/vercel/logs/collectstatic.log
+python manage.py collectstatic --noinput --clear 2>&1 | tee -a /tmp/vercel/logs/collectstatic.log
 
 # Run migrations
 log "Running migrations..."
 python manage.py migrate --no-input 2>&1 | tee -a /tmp/vercel/logs/migrate.log
 
-# Verify Django can find the settings module
-if ! python -c "from django.conf import settings; print(settings.BASE_DIR)" 2>/dev/null; then
-    log "ERROR: Django cannot find the settings module!"
-    exit 1
+# Create cache directory for whitenoise
+mkdir -p .cache
+
+# Create vercel.json if it doesn't exist
+if [ ! -f vercel.json ]; then
+    echo '{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/index.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "vercel_build.sh",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "staticfiles"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/static/(.*)",
+      "dest": "/static/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/api/index.py"
+    }
+  ]
+}' > vercel.json
 fi
 
 log "Build completed successfully!"
+
+# Print environment info for debugging
+echo "----- Environment Info -----"
+python -c "import sys; print('Python version:', sys.version)"
+python -c "import django; print('Django version:', django.get_version())"
+pwd
+ls -la
