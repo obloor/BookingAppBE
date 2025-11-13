@@ -4,28 +4,27 @@ from django.contrib.auth.models import User
 from .models import Room, Reservation
 
 
-# --- User Serializer for /api/users/me/ endpoint ---
+# User Serializer
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_staff']
 
 
-# --- Room Serializer ---
+# Room Serializer
 class RoomSerializer(serializers.ModelSerializer):
     class Meta:
         model = Room
         fields = "__all__"
 
 
-# serializers.py
+# Reservation Serializer
 class ReservationSerializer(serializers.ModelSerializer):
     booked_by_username = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Reservation
         fields = "__all__"
-        # make only created_at and is_cancelled read-only now
         read_only_fields = ("created_at", "is_cancelled",)
 
     def get_booked_by_username(self, obj):
@@ -37,7 +36,6 @@ class ReservationSerializer(serializers.ModelSerializer):
         if data["start_time"] < timezone.now():
             raise serializers.ValidationError("Start time must be in the future.")
 
-        # Prevent overlap
         existing_booking = Reservation.objects.filter(room=data["room"], is_cancelled=False)
         for booking in existing_booking:
             if data["start_time"] < booking.end_time and data["end_time"] > booking.start_time:
