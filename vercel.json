@@ -4,7 +4,7 @@
     {
       "src": "app/wsgi.py",
       "use": "@vercel/python",
-      "config": { 
+      "config": {
         "maxLambdaSize": "15mb",
         "runtime": "python3.9"
       }
@@ -26,5 +26,15 @@
       "src": "/(.*)",
       "dest": "/app/wsgi.py"
     }
-  ]
+  ],
+  "env": {
+    "PYTHONPATH": "/var/task",
+    "DJANGO_SETTINGS_MODULE": "app.settings",
+    "PYTHONUNBUFFERED": "true"
+  },
+  "build": {
+    "env": {
+      "NODE_VERSION": "16.x"
+    }
+  }
 }
