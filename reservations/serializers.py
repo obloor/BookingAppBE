@@ -1,43 +1,77 @@
 from rest_framework import serializers
 from django.utils import timezone
-from django.contrib.auth.models import User
 from .models import Room, Reservation
 
 
-# User Serializer
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_staff']
-
-
-# Room Serializer
 class RoomSerializer(serializers.ModelSerializer):
     class Meta:
         model = Room
         fields = "__all__"
 
 
-# Reservation Serializer
+from rest_framework import serializers
+from django.utils import timezone
+from .models import Room, Reservation
+
+class RoomSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Room
+        fields = "__all__"
+
+
 class ReservationSerializer(serializers.ModelSerializer):
+    room = RoomSerializer(read_only=True)
+    room_id = serializers.PrimaryKeyRelatedField(
+        queryset=Room.objects.all(),
+        source="room",
+        write_only=True
+    )
     booked_by_username = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Reservation
         fields = "__all__"
-        read_only_fields = ("created_at", "is_cancelled",)
+        read_only_fields = ("created_at", "is_cancelled", "status", "booked_by")
 
     def get_booked_by_username(self, obj):
-        return getattr(obj.booked_by, "username", None)
+        return obj.booked_by.username if obj.booked_by else None
+
+    def create(self, validated_data):
+        # Set the logged-in user as the booker
+        validated_data['booked_by'] = self.context['request'].user
+        validated_data['status'] = 'scheduled'  # Set initial status
+        return super().create(validated_data)
 
     def validate(self, data):
-        if data["end_time"] <= data["start_time"]:
-            raise serializers.ValidationError("End time must be greater than start time.")
-        if data["start_time"] < timezone.now():
-            raise serializers.ValidationError("Start time must be in the future.")
+        start = data.get("start_time")
+        end = data.get("end_time")
+        room = data.get("room")
 
-        existing_booking = Reservation.objects.filter(room=data["room"], is_cancelled=False)
-        for booking in existing_booking:
-            if data["start_time"] < booking.end_time and data["end_time"] > booking.start_time:
-                raise serializers.ValidationError("This room is already booked for that period.")
+        if start and end:
+            if end <= start:
+                raise serializers.ValidationError(
+                    {"end_time": "End time must be after start time."}
+                )
+
+            if start <= timezone.now():
+                raise serializers.ValidationError(
+                    {"start_time": "Start time must be in the future."}
+                )
+
+            if room:
+                overlapping = Reservation.objects.filter(
+                    room=room,
+                    is_cancelled=False,
+                    start_time__lt=end,
+                    end_time__gt=start
+                )
+
+                if self.instance:
+                    overlapping = overlapping.exclude(pk=self.instance.pk)
+
+                if overlapping.exists():
+                    raise serializers.ValidationError(
+                        {"room": "This room is already booked for the selected time period."}
+                    )
+
         return data

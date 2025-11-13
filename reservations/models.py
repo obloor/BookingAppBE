@@ -39,8 +39,9 @@ class Reservation(models.Model):
     notes = models.TextField(blank=True)
     is_cancelled = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    attendees = models.PositiveIntegerField(default=1)
 
-    # Orders reservations by start time in ascending order and adds index for quick lookup
+    # Orders reservations by start time in ascending order
     class Meta:
         ordering = ["start_time"]
         indexes = [models.Index(fields=["room", "start_time", "end_time"])]
