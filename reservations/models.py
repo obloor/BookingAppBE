@@ -10,7 +10,6 @@ class Room(models.Model):
     location = models.CharField(max_length=100)
     capacity = models.PositiveIntegerField()
     is_available = models.BooleanField(default=True, help_text="Is the room currently available for booking?")
-    #equipment = models.JSONField(default=list, blank=True)
     is_active = models.BooleanField(default=True)
 
     # Orders rooms by name alphabetically

@@ -8,16 +8,9 @@ class RoomSerializer(serializers.ModelSerializer):
         model = Room
         fields = "__all__"
 
-
 from rest_framework import serializers
 from django.utils import timezone
 from .models import Room, Reservation
-
-class RoomSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Room
-        fields = "__all__"
-
 
 class ReservationSerializer(serializers.ModelSerializer):
     room = RoomSerializer(read_only=True)
@@ -37,9 +30,8 @@ class ReservationSerializer(serializers.ModelSerializer):
         return obj.booked_by.username if obj.booked_by else None
 
     def create(self, validated_data):
-        # Set the logged-in user as the booker
         validated_data['booked_by'] = self.context['request'].user
-        validated_data['status'] = 'scheduled'  # Set initial status
+        validated_data['status'] = 'scheduled'
         return super().create(validated_data)
 
     def validate(self, data):
