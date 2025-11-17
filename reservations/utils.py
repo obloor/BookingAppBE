@@ -46,7 +46,7 @@ def schedule_reminder(reservation):
 
     from django.utils import timezone
     from django.template.loader import render_to_string
-
+    # Reminder is set 1 hour before the reservation start
     reminder_time = reservation.start_time - timedelta(hours=1)
     current_time = timezone.now()
     
