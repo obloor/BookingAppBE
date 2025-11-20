@@ -1,4 +1,3 @@
-
 from django.contrib.auth.models import User
 from django.db import models
 
@@ -32,7 +31,7 @@ class Reservation(models.Model):
     room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name="reservations")
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
-    client = models.CharField(max_length=100)
+    client = models.CharField(max_length=100, blank=True, default="")  # FIXED: was required, now optional
     booked_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="reservations")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='scheduled')
     notes = models.TextField(blank=True)
