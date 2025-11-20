@@ -95,17 +95,22 @@ USE_TZ = True
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # CORS
-CORS_ALLOW_ALL_ORIGINS = False
+DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True'
 
-CORS_ALLOWED_ORIGINS = [
-    "https://reservation-app-sepia.vercel.app",
-]
+# Allow all origins in development
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
+    CSRF_TRUSTED_ORIGINS = ['http://localhost:3000', 'http://127.0.0.1:3000']
+else:
+    CORS_ALLOW_ALL_ORIGINS = False
+    CORS_ALLOWED_ORIGINS = [
+        "https://reservation-app-sepia.vercel.app",
+    ]
+    CSRF_TRUSTED_ORIGINS = [
+        "https://reservation-app-sepia.vercel.app",
+    ]
 
 CORS_ALLOW_CREDENTIALS = True
-
-CSRF_TRUSTED_ORIGINS = [
-    "https://reservation-app-sepia.vercel.app",
-]
 
 # Email
 EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
