@@ -34,10 +34,10 @@ class ReservationViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(
             booked_by=self.request.user,
-            status='scheduled'         # default status on creation
+            status='scheduled'         # default status
         )
 
-    # POST /reservations/<id>/cancel/
+    # POST
     @action(detail=True, methods=["post"])
     def cancel(self, request, pk=None):
         reservation = self.get_object()
@@ -46,3 +46,5 @@ class ReservationViewSet(viewsets.ModelViewSet):
         reservation.save(update_fields=["is_cancelled", "status"])
 
         return Response({"detail": "Cancelled"}, status=200)
+
+
