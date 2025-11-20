@@ -107,7 +107,6 @@ CSRF_TRUSTED_ORIGINS = [
     "https://reservation-app-sepia.vercel.app",
 ]
 
-
 # Email
 EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
 EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.sendgrid.net")
