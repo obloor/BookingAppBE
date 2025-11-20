@@ -10,6 +10,7 @@ sys.path.insert(0, str(project_root))
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "app.settings")
 
-from django.core.wsgi import get_wsgi_application
+from django.core.asgi import get_asgi_application
 
-app = get_wsgi_application()
+app = get_asgi_application()
+
