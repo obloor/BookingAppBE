@@ -95,23 +95,27 @@ USE_TZ = True
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# In your Django settings.py
+# CORS settings
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
+
+# CORS settings
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
 
-# For production
+ALLOWED_HOSTS = ['*']
+
+# CORS allowed origins
 CORS_ALLOWED_ORIGINS = [
     "https://reservation-app-sepia.vercel.app",
 ]
 
-# If you need to test locally
 if DEBUG:
-    CORS_ALLOWED_ORIGINS += [
+    CORS_ALLOWED_ORIGINS.extend([
         "http://localhost:3000",
         "http://127.0.0.1:3000",
-    ]
+    ])
 
-# Make sure these are set
+# CORS settings
 CORS_ALLOW_METHODS = [
     'DELETE',
     'GET',
@@ -131,6 +135,12 @@ CORS_ALLOW_HEADERS = [
     'user-agent',
     'x-csrftoken',
     'x-requested-with',
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://reservation-app-sepia.vercel.app',
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
 ]
 
 # Email
