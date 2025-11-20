@@ -3,15 +3,11 @@
   "builds": [
     {
       "src": "api/index.py",
-      "use": "@vercel/python@5.8.4",
-      "config": {
-        "maxLambdaSize": "15mb",
-        "runtime": "python3.11"
-      }
+      "use": "@vercel/python"
     },
     {
       "src": "staticfiles/**",
-      "use": "@vercel/static@1.0.0"
+      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -24,7 +20,11 @@
       "dest": "/api/index.py"
     }
   ],
-  "env": {
-    "PYTHONPATH": "/var/task:/var/task/venv/lib/python3.11/site-packages"
+  "functions": {
+    "api/**/*.py": {
+      "maxDuration": 30,
+      "memory": 1024,
+      "excludeFiles": "{tests/**,__tests__/**,**/*.test.py,**/test_*.py,fixtures/**,__fixtures__/**,testdata/**,sample-data/**,static/**,assets/**}"
+    }
   }
 }
