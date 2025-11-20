@@ -94,15 +94,11 @@ USE_TZ = True
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# CORS settings
-DEBUG = os.getenv('DEBUG', 'False') == 'True'
+from corsheaders.defaults import default_headers
 
-# CORS settings
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
 
-
-# CORS allowed origins
 CORS_ALLOWED_ORIGINS = [
     "https://reservation-app-sepia.vercel.app",
 ]
@@ -113,33 +109,28 @@ if DEBUG:
         "http://127.0.0.1:3000",
     ])
 
-# CORS settings
 CORS_ALLOW_METHODS = [
-    'DELETE',
-    'GET',
-    'OPTIONS',
-    'PATCH',
-    'POST',
-    'PUT',
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
 ]
 
-CORS_ALLOW_HEADERS = [
-    'accept',
-    'accept-encoding',
-    'authorization',
-    'content-type',
-    'dnt',
-    'origin',
-    'user-agent',
-    'x-csrftoken',
-    'x-requested-with',
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    "content-type",
+    "authorization",
+    "x-csrftoken",
+    "x-requested-with",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://reservation-app-sepia.vercel.app',
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
+    "https://reservation-app-sepia.vercel.app",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
 ]
+
 
 # Email
 EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
