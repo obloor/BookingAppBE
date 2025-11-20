@@ -3,7 +3,7 @@
   "builds": [
     {
       "src": "api/index.py",
-      "use": "@vercel/python@5.1.0",
+      "use": "@vercel/python@5.8.4",
       "config": {
         "maxLambdaSize": "15mb",
         "runtime": "python3.11"
@@ -23,5 +23,8 @@
       "src": "/(.*)",
       "dest": "/api/index.py"
     }
-  ]
+  ],
+  "env": {
+    "PYTHONPATH": "/var/task:/var/task/venv/lib/python3.11/site-packages"
+  }
 }
