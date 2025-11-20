@@ -100,7 +100,7 @@ CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
-    "https://reservation-frontend.vercel.app/",
+    "https://reservation-frontend.vercel.app",  # NO SLASH
 ]
 
 if DEBUG:
