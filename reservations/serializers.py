@@ -16,7 +16,8 @@ from .models import Room, Reservation
 class ReservationSerializer(serializers.ModelSerializer):
     # Writable room PK
     room = serializers.PrimaryKeyRelatedField(
-        queryset=Room.objects.all()
+        queryset=Room.objects.all(),
+        required=False
     )
 
     room_details = RoomSerializer(source="room", read_only=True)
@@ -39,36 +40,37 @@ class ReservationSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
     # main validation
-    def validate(self, data):
-        start = data.get("start_time")
-        end = data.get("end_time")
-        room = data.get("room")
+def validate(self, data):
+    room = data.get("room", getattr(self.instance, "room", None))
+    start = data.get("start_time", getattr(self.instance, "start_time", None))
+    end = data.get("end_time", getattr(self.instance, "end_time", None))
 
-        if start and end:
-            if end <= start:
-                raise serializers.ValidationError(
-                    {"end_time": "End time must be after start time."}
-                )
+    if start and end:
+        if end <= start:
+            raise serializers.ValidationError(
+                {"end_time": "End time must be after start time."}
+            )
 
-            if start <= timezone.now():
-                raise serializers.ValidationError(
-                    {"start_time": "Start time must be in the future."}
-                )
-            # overlapping booking check
-            if room:
-                overlapping = Reservation.objects.filter(
-                    room=room,
-                    is_cancelled=False,
-                    start_time__lt=end,
-                    end_time__gt=start
-                )
+        from django.utils import timezone
+        if start <= timezone.now():
+            raise serializers.ValidationError(
+                {"start_time": "Start time must be in the future."}
+            )
 
-                if self.instance:
-                    overlapping = overlapping.exclude(pk=self.instance.pk)
+        # overlapping check
+        overlapping = Reservation.objects.filter(
+            room=room,
+            is_cancelled=False,
+            start_time__lt=end,
+            end_time__gt=start
+        )
 
-                if overlapping.exists():
-                    raise serializers.ValidationError(
-                        {"room": "This room is already booked for the selected time period."}
-                    )
+        if self.instance:
+            overlapping = overlapping.exclude(pk=self.instance.pk)
 
-        return data
+        if overlapping.exists():
+            raise serializers.ValidationError(
+                {"room": "This room is already booked for that time."}
+            )
+
+    return data
