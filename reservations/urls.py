@@ -5,7 +5,7 @@ from .user_auth import RegisterView, CurrentUserView
 
 router = DefaultRouter()
 router.register(r"rooms", RoomViewSet, basename="room")
-router.register(r"reservations", ReservationViewSet, basename="reservation")
+router.register("reservations", ReservationViewSet, basename="reservations")
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),

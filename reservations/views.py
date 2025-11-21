@@ -21,30 +21,22 @@ class RoomViewSet(viewsets.ModelViewSet):
 class ReservationViewSet(viewsets.ModelViewSet):
     queryset = Reservation.objects.select_related("room", "booked_by").all()
     serializer_class = ReservationSerializer
-    permission_classes = [IsAuthenticated]   # Must be logged in to access reservations
+    permission_classes = [IsAuthenticated]
 
-    # Users only see their own reservations
     def get_queryset(self):
         qs = super().get_queryset()
         if not self.request.user.is_staff:
             qs = qs.filter(booked_by=self.request.user)
         return qs
 
-    # Auto-assign the logged-in user
     def perform_create(self, serializer):
         serializer.save(
             booked_by=self.request.user,
-            status='scheduled'         # default status
+            status='scheduled'
         )
 
-    # POST
-    @action(detail=True, methods=["post"])
-    def cancel(self, request, pk=None):
-        reservation = self.get_object()
-        reservation.is_cancelled = True
-        reservation.status = "cancelled"
-        reservation.save(update_fields=["is_cancelled", "status"])
-
-        return Response({"detail": "Cancelled"}, status=200)
-
-
+    @action(detail=False, methods=["get"], url_path="my")
+    def my_reservations(self, request):
+        qs = self.get_queryset().filter(booked_by=request.user)
+        serializer = self.get_serializer(qs, many=True)
+        return Response(serializer.data)
