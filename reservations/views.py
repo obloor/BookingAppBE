@@ -2,8 +2,10 @@ from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from rest_framework.decorators import action
 from rest_framework.response import Response
+
 from .models import Room, Reservation
 from .serializers import RoomSerializer, ReservationSerializer
+
 
 class RoomViewSet(viewsets.ModelViewSet):
     queryset = Room.objects.all()
@@ -32,11 +34,11 @@ class ReservationViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(
             booked_by=self.request.user,
-            status='scheduled'
+            status="scheduled",
         )
 
     @action(detail=False, methods=["get"], url_path="my")
     def my_reservations(self, request):
-        qs = self.get_queryset().filter(booked_by=request.user)
+        qs = self.get_queryset()
         serializer = self.get_serializer(qs, many=True)
         return Response(serializer.data)
