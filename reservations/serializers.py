@@ -1,3 +1,4 @@
+from django.db import transaction
 from rest_framework import serializers
 from django.utils import timezone
 from .models import Room, Reservation
@@ -36,7 +37,25 @@ class ReservationSerializer(serializers.ModelSerializer):
 
         validated_data["booked_by"] = user
         validated_data["status"] = "scheduled"
-        return super().create(validated_data)
+
+        room = validated_data["room"]
+        start = validated_data["start_time"]
+        end = validated_data["end_time"]
+
+        with transaction.atomic():
+            # Lock this room's active reservations until the transaction commits,
+            # so a concurrent request has to wait its turn to check overlap.
+            overlapping = Reservation.objects.select_for_update().filter(
+                room=room,
+                is_cancelled=False,
+                start_time__lt=end,
+                end_time__gt=start,
+            )
+            if overlapping.exists():
+                raise serializers.ValidationError(
+                    {"room": "This room is already booked for that time."}
+                )
+            return super().create(validated_data)
 
     def validate(self, data):
         room = data.get("room", getattr(self.instance, "room", None))
