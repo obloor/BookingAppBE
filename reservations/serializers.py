@@ -14,26 +14,22 @@ from .models import Room, Reservation
 
 # serializer for creating + updating reservations
 class ReservationSerializer(serializers.ModelSerializer):
-    # Writable room PK
     room = serializers.PrimaryKeyRelatedField(
         queryset=Room.objects.all(),
         required=True
     )
 
     room_details = RoomSerializer(source="room", read_only=True)
-
     booked_by_username = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Reservation
         fields = "__all__"
-        # fields that should NOT be set by the frontend
         read_only_fields = ("created_at", "is_cancelled", "status", "booked_by")
 
     def get_booked_by_username(self, obj):
         return obj.booked_by.username if obj.booked_by else None
 
-    # user + status check
     def create(self, validated_data):
         validated_data['booked_by'] = self.context['request'].user
         validated_data['status'] = 'scheduled'
