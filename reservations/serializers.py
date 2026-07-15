@@ -26,7 +26,15 @@ class ReservationSerializer(serializers.ModelSerializer):
         return obj.booked_by.username if obj.booked_by else None
 
     def create(self, validated_data):
-        validated_data["booked_by"] = self.context["request"].user
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+
+        if not user or not user.is_authenticated:
+            raise serializers.ValidationError(
+                {"detail": "Authentication required to create a reservation."}
+            )
+
+        validated_data["booked_by"] = user
         validated_data["status"] = "scheduled"
         return super().create(validated_data)
 
@@ -35,6 +43,13 @@ class ReservationSerializer(serializers.ModelSerializer):
         start = data.get("start_time", getattr(self.instance, "start_time", None))
         end = data.get("end_time", getattr(self.instance, "end_time", None))
 
+        # Require room on create; on update, allow existing instance.room
+        if not room:
+            raise serializers.ValidationError(
+                {"room": "Room is required."}
+            )
+
+        # Validate times only when both are present
         if start and end:
             if end <= start:
                 raise serializers.ValidationError(
