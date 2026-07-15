@@ -17,7 +17,7 @@ class ReservationSerializer(serializers.ModelSerializer):
     # Writable room PK
     room = serializers.PrimaryKeyRelatedField(
         queryset=Room.objects.all(),
-        required=False
+        required=True
     )
 
     room_details = RoomSerializer(source="room", read_only=True)
