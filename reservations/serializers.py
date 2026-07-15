@@ -16,7 +16,7 @@ from .models import Room, Reservation
 class ReservationSerializer(serializers.ModelSerializer):
     room = serializers.PrimaryKeyRelatedField(
         queryset=Room.objects.all(),
-        required=True
+        required=False
     )
 
     room_details = RoomSerializer(source="room", read_only=True)
